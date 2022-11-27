@@ -13,6 +13,7 @@ _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppo
 
 void deleteMovesAllowingCheck(char board[8][8][2], int legalMoves[][2], int *legalMovesLength, int startingPosition[2], char char_currentPlayer, char char_oppositePlayer);
 
+// RENDER
 // Render board with coordinates
 void renderBoard(char board[8][8][2])
 {
@@ -94,6 +95,7 @@ void renderBoardWithMoves(char board[8][8][2], int legalMoves[][2], int legalMov
     printf("\n\n");
 }
 
+// INPUT
 // Parses input to coordinates array
 // input: B3 -> output: [2, 5]
 void parseInput(int inputRow, char inputColumn, int parsedPosition[2])
@@ -135,6 +137,7 @@ void askForPosition(int startingPosition[2], char prompt[])
     parseInput(row, column, startingPosition);
 }
 
+// BOARD UPDATE
 // Updates placement of the pawns on the board after move
 void updateBoard(char board[8][8][2], int startingPosition[2], int endingPosition[2])
 {
@@ -146,6 +149,7 @@ void updateBoard(char board[8][8][2], int startingPosition[2], int endingPositio
     board[startingPosition[0]][startingPosition[1]][1] = ' ';
 }
 
+// ARRAY METHODS
 // Deletes element from 2D array
 void deleteElement(int array[][2], int indexOfElementToDelete, int *lastIndex) 
 {
@@ -339,15 +343,6 @@ void allLegalMovesForPlayer(char board[8][8][2], int legalMoves[][2], int *legal
     }
 }
 
-// Outputs number of legal moves for a given player
-int numberOfLegalMoves(char board[8][8][2], char char_currentPlayer, char char_oppositePlayer) {
-    int legalMoves[200][2];
-    int legalMovesLength = 0;
-    allLegalMovesForPlayer(board, legalMoves, &legalMovesLength, char_currentPlayer, char_oppositePlayer);
-
-    return legalMovesLength;
-}
-
 // Appends legal moves of a chosen figure to array
 void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *legalMovesLength, char char_currentPlayer)
 {
@@ -428,6 +423,15 @@ void deleteMovesAllowingCheck(char board[8][8][2], int legalMoves[][2], int *leg
             legalMovesIndex--;
         }
     }
+}
+
+// Outputs number of legal moves for a given player
+int numberOfLegalMoves(char board[8][8][2], char char_currentPlayer, char char_oppositePlayer) {
+    int legalMoves[200][2];
+    int legalMovesLength = 0;
+    allLegalMovesForPlayer(board, legalMoves, &legalMovesLength, char_currentPlayer, char_oppositePlayer);
+
+    return legalMovesLength;
 }
 
 // CHECKING FUNCTIONS
@@ -544,14 +548,14 @@ _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppo
 int main()
 {
     char board[8][8][2] = {
+        {{'W', '1'}, {'S', '1'}, {'G', '1'}, {'H', '1'}, {'K', '1'}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
+        {{'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '1'}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '0'}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'H', '1'}, {' ', ' '}, {' ', ' '}}
+        {{'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
+        {{'W', '0'}, {'S', '0'}, {'G', '0'}, {'K', '0'}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}
     };
 
     renderBoard(board);
