@@ -187,73 +187,42 @@ void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int sta
     }
 }
 
+// Checking function for legal move in a line (staight line o diagonal). Returns 1 if there are no more legal moves in a line
+_Bool legalMoveInALine(char board[8][8][2], int legalMoves[][2], int *i, int row, int col, char char_currentPlayer, char char_opositePlayer) {
+    if (board[row][col][1] != char_currentPlayer) {
+        appendToLegalMoves(legalMoves, i, row, col);
+
+        if (board[row][col][1] == char_opositePlayer)
+            return 1;
+    }
+    else if (board[row][col][1] == char_currentPlayer)
+        return 1;
+
+    return 0;
+}
+
 // Generates legal moves for a selected rook and appends them to legalMoves array
 void legalMovesForRook(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_currentPlayer, char char_opositePlayer)
 {
-
     // Check upwards
     for (int row = startRow - 1; row >= 0; row--)
-    {
-        if (board[row][startCol][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, startCol);
-
-            if (board[row][startCol][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][startCol][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check downwards
     for (int row = startRow + 1; row < 8; row++)
-    {
-        if (board[row][startCol][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, startCol);
-
-            if (board[row][startCol][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][startCol][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check right
     for (int col = startCol + 1; col < 8; col++)
-    {
-        if (board[startRow][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, startRow, col);
-
-            if (board[startRow][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[startRow][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check left
     for (int col = startCol - 1; col >= 0; col--)
-    {
-        if (board[startRow][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, startRow, col);
-
-            if (board[startRow][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[startRow][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 }
 
 // Generates legal moves for selected bishop and appends them to legalMoves array
@@ -261,67 +230,23 @@ void legalMovesForBishop(char board[8][8][2], int legalMoves[][2], int *i, int s
 {
     // Check up/righ diagonal
     for (int row = startRow - 1, col = startCol + 1; row >= 0 && col < 8; row--, col++)
-    {
-        if (board[row][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, col);
-
-            if (board[row][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check up/left diagonal
     for (int row = startRow - 1, col = startCol - 1; row >= 0 && col >= 0; row--, col--)
-    {
-        if (board[row][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, col);
-
-            if (board[row][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check down/righ diagonal
     for (int row = startRow + 1, col = startCol + 1; row < 8 && col < 8; row++, col++)
-    {
-        if (board[row][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, col);
-
-            if (board[row][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 
     // Check down/left diagonal
     for (int row = startRow + 1, col = startCol - 1; row < 8 && col >= 0; row++, col--)
-    {
-        if (board[row][col][1] != char_currentPlayer)
-        {
-            appendToLegalMoves(legalMoves, i, row, col);
-
-            if (board[row][col][1] == char_opositePlayer)
-                break;
-        }
-        else if (board[row][col][1] == char_currentPlayer)
-        {
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
             break;
-        }
-    }
 }
 
 // Helping function for legalMovesForKnight function
@@ -526,22 +451,19 @@ _Bool isMoveLegal(char board[8][8][2], int startingPosition[2], int endingPositi
     char endingPawn[2] = {board[endRow][endCol][0], board[endRow][endCol][1]};           // pawn ex. {' ', ' '}
 
     // Check if chosen position is inside the board
-    if (endCol == -1 || endRow < 0 || endRow > 7)
-    {
+    if (endCol == -1 || endRow < 0 || endRow > 7) {
         printf("\n* Zaznaczyłeś pozycję poza planszą. Spróbuj pawnownie. *\n\n");
         return isLegal;
     }
 
     // Check if player moved his pawn on his pawn
-    if (board[startRow][startCol][1] == board[endRow][endCol][1])
-    {
+    if (board[startRow][startCol][1] == board[endRow][endCol][1]) {
         printf("\n* Próbowałeś zbić swojego pionka. Spróbuj ponownie. *\n\n");
         return isLegal;
     }
 
     // Check if player tried moving his pawn on the same position
-    if (startRow == endRow && startCol == endCol)
-    {
+    if (startRow == endRow && startCol == endCol) {
         printf("\nPróbowałeś ruszyć się pionekiem w to samo miejsce. Spróbuj ponownie *\n\n");
         return isLegal;
     }
@@ -578,20 +500,17 @@ _Bool isSelectedFigureLegal(char board[8][8][2], int startingPosition[2])
         board[startingPosition[0]][startingPosition[1]][1]}; // ex. startingPawn = {'W', '0'}
 
     // Check if starting position and ending position isn't outside the board
-    if (startingPosition[1] == -1 || startingPosition[0] < 0 || startingPosition[0] > 7)
-    {
+    if (startingPosition[1] == -1 || startingPosition[0] < 0 || startingPosition[0] > 7) {
         printf("* Zaznaczyłeś pozycję poza planszą. Spróbuj ponownie. *\n\n");
         return 0;
     }
 
     // Check if player chose his pawn
-    if (startingPawn[1] - '0' == !PLAYER)
-    {
+    if (startingPawn[1] - '0' == !PLAYER) {
         printf("\n* Próbowałeś ruszyć pionka przeciwnika. Spróbuj ponownie. *\n\n");
         return 0;
     }
-    else if (startingPawn[1] == ' ')
-    {
+    else if (startingPawn[1] == ' ') {
         printf("\n* Próbowałeś ruszyć puste pole. Spróbuj ponownie. *\n\n");
         return 0;
     }
@@ -606,9 +525,9 @@ int main()
         {{'W', '1'}, {'S', '1'}, {'G', '1'}, {' ', ' '}, {' ', ' '}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
         {{'P', '1'}, {' ', ' '}, {'P', '1'}, {' ', ' '}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
         {{' ', ' '}, {'P', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}, {'H', '1'}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'P', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {'P', '0'}, {' ', ' '}, {'K', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'G', '1'}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{'P', '0'}, {'P', '0'}, {' ', ' '}, {' ', ' '}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
         {{'W', '0'}, {'S', '0'}, {'G', '0'}, {' ', ' '}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}};
 
@@ -621,22 +540,22 @@ int main()
         int endingPosition[2];
 
         int legalMoves[30][2];
+        int legalMovesLength = 0;
 
         if (1)
         {
             // 1) Ask player which figure to move
             do
-            {
                 askForPosition(startingPosition, "Podaj kolumnę i rząd figury: ");
-            } while (!isSelectedFigureLegal(board, startingPosition)); // Check if chosen starting position is legal
+            while (!isSelectedFigureLegal(board, startingPosition)); // Check if chosen starting position is legal
 
             // 2) Generate legal moves for selected figure
-            int legalMovesLength = 0;
             char char_currentPlayer = (PLAYER == 0) ? '0' : '1';
+
             legalMovesGenerator(board, startingPosition, legalMoves, &legalMovesLength, char_currentPlayer);
 
-            if (legalMoves[0][0] == -1)
-            {
+            // Check if any legal moves exist
+            if (legalMoves[0][0] == -1) {
                 printf("\n* Ta figura nie ma żadnych dostępnych ruchów *\n\n");
                 continue;
             }
@@ -644,11 +563,10 @@ int main()
             // 3) Render board with posible legal moves highlighted
             renderBoardWithMoves(board, legalMoves, legalMovesLength);
 
-            // 4) Ask player where to move a chosen pawn
+            // 4) Ask player where to move a chosen pawn until move is legal
             do
-            {
                 askForPosition(endingPosition, "Podaj kolumnę i rząd, na które chcesz się ruszyć: ");
-            } while (!isMoveLegal(board, startingPosition, endingPosition, legalMoves)); // Check if chosen ending position is legal
+            while (!isMoveLegal(board, startingPosition, endingPosition, legalMoves)); // Check if chosen ending position is legal
         }
         else
         {
