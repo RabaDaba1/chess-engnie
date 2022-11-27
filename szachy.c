@@ -9,9 +9,7 @@ _Bool DRAW = 0;
 
 void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *legalMoveIndex, char char_currentPlayer);
 
-void allLegalPlayerMoves(char board[8][8][2], int moves[][2], int *lastIndexInMoves, char char_player);
-
-void attackingPositionsGenerator(char board[8][8][2], int positions[][2], int *arrayLengh, char char_currentPlayer, char char_opositePlayer);
+_Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppositePlayer);
 
 // Render board with coordinates
 void renderBoard(char board[8][8][2])
@@ -166,13 +164,14 @@ void appendToLegalMoves(int legalMoves[][2], int *i, int row, int col)
 }
 
 /*
- * MOVE GENERATORS FOR SELECTED PAWNS
+ * MOVE GENERATORS FOR SELECTED FIGURES
 */
 
+// PAWN
 // Generates legal moves for a selected pawn and appends them to legalMoves array
-void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_opositePlayer)
+void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_oppositePlayer)
 {
-    int vector = (char_opositePlayer == '0') ? 1 : -1;
+    int vector = (char_oppositePlayer == '0') ? 1 : -1;
 
     if ((board[startRow + vector][startCol][1] == ' ') && startRow + vector < 8 && startRow + vector > -1)
         appendToLegalMoves(legalMoves, i, startRow + vector, startCol);
@@ -180,20 +179,20 @@ void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int sta
     if (startRow + vector < 8 && startRow + vector > -1)
     {
 
-        if (board[startRow + vector][startCol + 1][1] == char_opositePlayer && startCol + 1 < 8)
+        if (board[startRow + vector][startCol + 1][1] == char_oppositePlayer && startCol + 1 < 8)
             appendToLegalMoves(legalMoves, i, startRow + vector, startCol + 1);
 
-        if (board[startRow + vector][startCol - 1][1] == char_opositePlayer && startCol - 1 > -1)
+        if (board[startRow + vector][startCol - 1][1] == char_oppositePlayer && startCol - 1 > -1)
             appendToLegalMoves(legalMoves, i, startRow + vector, startCol - 1);
     }
 }
 
 // Checking function for legal move in a line (staight line o diagonal). Returns 1 if there are no more legal moves in a line
-_Bool legalMoveInALine(char board[8][8][2], int legalMoves[][2], int *i, int row, int col, char char_currentPlayer, char char_opositePlayer) {
+_Bool legalMoveInALine(char board[8][8][2], int legalMoves[][2], int *i, int row, int col, char char_currentPlayer, char char_oppositePlayer) {
     if (board[row][col][1] != char_currentPlayer) {
         appendToLegalMoves(legalMoves, i, row, col);
 
-        if (board[row][col][1] == char_opositePlayer)
+        if (board[row][col][1] == char_oppositePlayer)
             return 1;
     }
     else if (board[row][col][1] == char_currentPlayer)
@@ -202,204 +201,136 @@ _Bool legalMoveInALine(char board[8][8][2], int legalMoves[][2], int *i, int row
     return 0;
 }
 
+// ROOK
 // Generates legal moves for a selected rook and appends them to legalMoves array
-void legalMovesForRook(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_currentPlayer, char char_opositePlayer)
+void legalMovesForRook(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_currentPlayer, char char_oppositePlayer)
 {
     // Check upwards
     for (int row = startRow - 1; row >= 0; row--)
-        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check downwards
     for (int row = startRow + 1; row < 8; row++)
-        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, startCol, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check right
     for (int col = startCol + 1; col < 8; col++)
-        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check left
     for (int col = startCol - 1; col >= 0; col--)
-        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, startRow, col, char_currentPlayer, char_oppositePlayer))
             break;
 }
 
+// BISHOP
 // Generates legal moves for selected bishop and appends them to legalMoves array
-void legalMovesForBishop(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_currentPlayer, char char_opositePlayer)
+void legalMovesForBishop(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_currentPlayer, char char_oppositePlayer)
 {
     // Check up/righ diagonal
     for (int row = startRow - 1, col = startCol + 1; row >= 0 && col < 8; row--, col++)
-        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check up/left diagonal
     for (int row = startRow - 1, col = startCol - 1; row >= 0 && col >= 0; row--, col--)
-        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check down/righ diagonal
     for (int row = startRow + 1, col = startCol + 1; row < 8 && col < 8; row++, col++)
-        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_oppositePlayer))
             break;
 
     // Check down/left diagonal
     for (int row = startRow + 1, col = startCol - 1; row < 8 && col >= 0; row++, col--)
-        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_opositePlayer))
+        if(legalMoveInALine(board, legalMoves, i, row, col, char_currentPlayer, char_oppositePlayer))
             break;
 }
 
+// KNIGHT
 // Helping function for legalMovesForKnight function
-void legalKnightMoveInAPosition(char board[8][8][2], int legalMoves[][2], int *i, char char_opositePlayer, int row, int col)
+void legalKnightMoveInAPosition(char board[8][8][2], int legalMoves[][2], int *i, char char_oppositePlayer, int row, int col)
 {
-    if ((board[row][col][1] == ' ' || board[row][col][1] == char_opositePlayer) && row >= 0 && row < 8 && col >= 0 && col < 8)
+    if ((board[row][col][1] == ' ' || board[row][col][1] == char_oppositePlayer) && row >= 0 && row < 8 && col >= 0 && col < 8)
         appendToLegalMoves(legalMoves, i, row, col);
 }
 
 // Generates legal moves for selected knight and appends them to legalMoves array
-void legalMovesForKnight(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_opositePlayer)
+void legalMovesForKnight(char board[8][8][2], int legalMoves[][2], int *i, int startRow, int startCol, char char_oppositePlayer)
 {
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow - 2, startCol + 1);
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow - 2, startCol - 1);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow - 2, startCol + 1);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow - 2, startCol - 1);
 
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow - 1, startCol + 2);
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow - 1, startCol - 2);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow - 1, startCol + 2);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow - 1, startCol - 2);
 
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow + 1, startCol + 2);
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow + 1, startCol - 2);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow + 1, startCol + 2);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow + 1, startCol - 2);
 
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow + 2, startCol + 1);
-    legalKnightMoveInAPosition(board, legalMoves, i, char_opositePlayer, startRow + 2, startCol - 1);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow + 2, startCol + 1);
+    legalKnightMoveInAPosition(board, legalMoves, i, char_oppositePlayer, startRow + 2, startCol - 1);
 }
 
+// KING
 // Helping function for legalMovesForKing function
-void legalKingMoveInAPosition(char board[8][8][2], int legalMoves[][2], int *i, char char_opositePlayer, int moveRow, int moveCol)
+void legalKingMoveInAPosition(char board[8][8][2], int legalMoves[][2], int *i, char char_oppositePlayer, int moveRow, int moveCol)
 {
-    if (board[moveRow][moveCol][1] == ' ' || board[moveRow][moveCol][1] == char_opositePlayer)
+    if (board[moveRow][moveCol][1] == ' ' || board[moveRow][moveCol][1] == char_oppositePlayer)
         appendToLegalMoves(legalMoves, i, moveRow, moveCol);
 }
 
-// Generates basic 8 legal moves for king
-void generateBasicLegalMovesForKing(char board[8][8][2], int legalMoves[][2], int *lastIndex, int kingsRow, int kingsCol, char char_opositePlayer)
+// Generates legal moves for selected king and appends them to legalMoves array
+void legalMovesForKing(char board[8][8][2], int legalMoves[][2], int *lastIndex, int kingsRow, int kingsCol, char char_currentPlayer, char char_oppositePlayer)
 {
-    // Generate legal moves for king
+    // Generate at most 8 basic legal moves for current players king
     for (int n = -1; n <= 1; n++)
     {
-        legalKingMoveInAPosition(board, legalMoves, lastIndex, char_opositePlayer, kingsRow - 1, kingsCol + n);
-        legalKingMoveInAPosition(board, legalMoves, lastIndex, char_opositePlayer, kingsRow + 1, kingsCol + n);
+        legalKingMoveInAPosition(board, legalMoves, lastIndex, char_oppositePlayer, kingsRow - 1, kingsCol + n);
+        legalKingMoveInAPosition(board, legalMoves, lastIndex, char_oppositePlayer, kingsRow + 1, kingsCol + n);
         if (n)
-            legalKingMoveInAPosition(board, legalMoves, lastIndex, char_opositePlayer, kingsRow, kingsCol + n);
-    }
-
-    legalMoves[*lastIndex][0] = -1;
-}
-
-// Generates legal moves for selected king and appends them to legalMoves array
-void legalMovesForKing(char board[8][8][2], int legalMoves[][2], int *lastIndex, int kingsRow, int kingsCol, char char_currentPlayer, char char_opositePlayer)
-{
-
-    // Generate at most 8 basic legal moves for current players king
-    generateBasicLegalMovesForKing(board, legalMoves, lastIndex, kingsRow, kingsCol, char_opositePlayer);
-
-    // Generate all positions from which opponent can check
-    int checkingMoves[200][2];
-    int checkingMovesLength = 0;
-
-    board[kingsRow][kingsCol][0] = ' ';
-    board[kingsRow][kingsCol][1] = ' ';
-
-    attackingPositionsGenerator(board, checkingMoves, &checkingMovesLength, char_currentPlayer, char_opositePlayer);  
-
-    board[kingsRow][kingsCol][0] = 'K';
-    board[kingsRow][kingsCol][1] = char_currentPlayer;
-
-    // Delete moves from the legalMoves array that are in checkingMoves array
-    for (int legalMoveIndex = 0; legalMoves[legalMoveIndex][0] != -1; legalMoveIndex++)
-    {
-        for (int i = 0; i < checkingMovesLength; i++)
-        {
-            if (legalMoves[legalMoveIndex][0] == checkingMoves[i][0] && legalMoves[legalMoveIndex][1] == checkingMoves[i][1])
-            {
-                deleteElement(legalMoves, legalMoveIndex, lastIndex);
-                legalMoveIndex--;
-                break;
-            }
-        }
+            legalKingMoveInAPosition(board, legalMoves, lastIndex, char_oppositePlayer, kingsRow, kingsCol + n);
     }
 }
 
-// Appends all legal moves of a chosen player to moves array
-void allLegalPlayerMoves(char board[8][8][2], int moves[][2], int *lastIndexInMoves, char char_player)
-{
+// GENERATORS
+// Appends all positions that current player can attack to an array for a given board
+void attackPositionsGenerator(char board[8][8][2], int attackPositions[][2], int *attackPositionsLen, char char_currentPlayer, char char_oppositePlayer) {
     for (int row = 0; row < 8; row++)
     {
         for (int column = 0; column < 8; column++)
         {
-            if (board[row][column][1] == char_player)
-            {
-            }
-        }
-    }
-}
-
-// Appends all positions that oponent can attack to the positions array
-void attackingPositionsGenerator(char board[8][8][2], int positions[][2], int *arrayLength, char char_currentPlayer, char char_opositePlayer) {
-    for (int row = 0; row < 8; row++)
-    {
-        for (int column = 0; column < 8; column++)
-        {
-            if (board[row][column][1] == char_opositePlayer)
-            {
-                int position[2] = {row, column};
-
-                if (board[row][column][0] == 'P')
-                {
-                    char emptyBoard[8][8][2] = {
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-                        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}};
-
-                    emptyBoard[row][column][0] = 'P';
-                    emptyBoard[row][column][1] = char_opositePlayer;
-
-                    int vector = (char_opositePlayer == '0') ? -1 : 1;
+            if(board[row][column][1] == char_currentPlayer) {
+                if(board[row][column][0] != 'P') {
+                    int position[2] = {row, column};
+                    legalMovesGenerator(board, position, attackPositions, attackPositionsLen, char_currentPlayer);
+                } else if (board[row][column][0] == 'P') {
+                    int vector = (char_currentPlayer == '0') ? -1 : 1;
 
                     if (row + vector < 8 && row + vector > -1)
                     {
-                        if (column+1 < 8)
-                            appendToLegalMoves(positions, arrayLength, row + vector, column + 1);
+                        if (column+1 < 8 && board[row+vector][column+1][1] != char_currentPlayer)
+                            appendToLegalMoves(attackPositions, attackPositionsLen, row + vector, column + 1);
 
-                        if (column-1 > -1)
-                            appendToLegalMoves(positions, arrayLength, row + vector, column - 1);
+                        if (column-1 > -1 && board[row+vector][column-1][1] != char_currentPlayer)
+                            appendToLegalMoves(attackPositions, attackPositionsLen, row + vector, column - 1);
                     }
-                }
-                else if (board[row][column][0] == 'K')
-                {
-                    generateBasicLegalMovesForKing(board, positions, arrayLength, row, column, char_opositePlayer);
-                }
-                else
-                {
-                    legalMovesGenerator(board, position, positions, arrayLength, char_currentPlayer);
                 }
             }
         }
     }
-    positions[*arrayLength][0] = -1;
 }
 
 // Appends legal moves of a chosen figure to array
-void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *lastIndex, char char_currentPlayer)
+void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *legalMovesLen, char char_currentPlayer)
 {
 
     char pawnType = board[startingPosition[0]][startingPosition[1]][0];
 
-    char char_opositePlayer = (char_currentPlayer == '0') ? '1' : '0';
+    char char_oppositePlayer = (char_currentPlayer == '0') ? '1' : '0';
 
     int startRow = startingPosition[0];
     int startCol = startingPosition[1];
@@ -409,40 +340,77 @@ void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legal
     {
     // 1) Legal moves for pawn
     case 'P':
-        legalMovesForPawn(board, legalMoves, lastIndex, startRow, startCol, char_opositePlayer);
+        legalMovesForPawn(board, legalMoves, legalMovesLen, startRow, startCol, char_oppositePlayer);
         break;
     // 2) Legal moves for rook
     case 'W':
-        legalMovesForRook(board, legalMoves, lastIndex, startRow, startCol, char_currentPlayer, char_opositePlayer);
+        legalMovesForRook(board, legalMoves, legalMovesLen, startRow, startCol, char_currentPlayer, char_oppositePlayer);
         break;
     // 3) Legal moves for bishop
     case 'G':
-        legalMovesForBishop(board, legalMoves, lastIndex, startRow, startCol, char_currentPlayer, char_opositePlayer);
+        legalMovesForBishop(board, legalMoves, legalMovesLen, startRow, startCol, char_currentPlayer, char_oppositePlayer);
         break;
     // 4) Legal moves for knight
     case 'S':
-        legalMovesForKnight(board, legalMoves, lastIndex, startRow, startCol, char_opositePlayer);
+        legalMovesForKnight(board, legalMoves, legalMovesLen, startRow, startCol, char_oppositePlayer);
         break;
     // 5) Legal moves for hetman
     case 'H':
-        legalMovesForRook(board, legalMoves, lastIndex, startRow, startCol, char_currentPlayer, char_opositePlayer);
-        legalMovesForBishop(board, legalMoves, lastIndex, startRow, startCol, char_currentPlayer, char_opositePlayer);
+        legalMovesForRook(board, legalMoves, legalMovesLen, startRow, startCol, char_currentPlayer, char_oppositePlayer);
+        legalMovesForBishop(board, legalMoves, legalMovesLen, startRow, startCol, char_currentPlayer, char_oppositePlayer);
         break;
     // 6) Legal moves for king
     case 'K':
-        legalMovesForKing(board, legalMoves, lastIndex, startRow, startCol, char_currentPlayer, char_opositePlayer);
+        legalMovesForKing(board, legalMoves, legalMovesLen, startRow, startCol, char_currentPlayer, char_oppositePlayer);
         break;
     }
 
-    legalMoves[*lastIndex][0] = -1;
-
-    // Check every move in legalMoves array for a check on current's player king
+    legalMoves[*legalMovesLen][0] = -1;
 }
 
+// Deletes moves that allow for check 
+void deleteMovesAllowingCheck(char board[8][8][2], int legalMoves[][2], int *legalMovesLen, int startingPosition[2], char char_currentPlayer, char char_oppositePlayer)
+{
+    // Check every move in legalMoves array for a check on current's player king
+    for (int legalMovesIndex = 0; legalMovesIndex < *legalMovesLen; legalMovesIndex++)
+    {
+        char boardAfterMove[8][8][2] = {
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+            {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
+        };
+
+        boardAfterMove[legalMoves[legalMovesIndex][0]][legalMoves[legalMovesIndex][1]][0] = board[startingPosition[0]][startingPosition[1]][0];
+        boardAfterMove[legalMoves[legalMovesIndex][0]][legalMoves[legalMovesIndex][1]][1] = board[startingPosition[0]][startingPosition[1]][1];
+
+        boardAfterMove[startingPosition[0]][startingPosition[1]][0] = ' ';
+        boardAfterMove[startingPosition[0]][startingPosition[1]][1] = ' ';
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if(!(i == startingPosition[0] && j == startingPosition[1]) && !(i == legalMoves[legalMovesIndex][0] && j == legalMoves[legalMovesIndex][1])) {
+                    boardAfterMove[i][j][0] = board[i][j][0];
+                    boardAfterMove[i][j][1] = board[i][j][1];
+                }
+            }  
+        }
+
+        if(checkForCheck(boardAfterMove, char_oppositePlayer, char_currentPlayer)){
+            deleteElement(legalMoves, legalMovesIndex, legalMovesLen);
+            legalMovesIndex--;
+        }
+    }
+}
+
+// CHECKING FUNCTIONS
 // Checks if players move was valid with the rules
 _Bool isMoveLegal(char board[8][8][2], int startingPosition[2], int endingPosition[2], int legalMoves[][2])
 {
-
     _Bool isLegal = 0;
 
     int startRow = startingPosition[0];
@@ -521,25 +489,48 @@ _Bool isSelectedFigureLegal(char board[8][8][2], int startingPosition[2])
     return 1;
 }
 
+// Check if current player checked opponent
 _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppositePlayer) {
-    // Get all positions that opponent can attack for a current board
+    _Bool isCheck = 0;
+
+    // Get all positions that current player can attack for a given board
     int checkingPositions[200][2];
-    int checkingPositionsIndex = 0;
-    attackingPositionsGenerator(board, checkingPositions, &checkingPositionsIndex, char_currentPlayer, char_oppositePlayer);
+    int checkingPositionsLen = 0;
+
+    // Generate all positions that current player can attack
+    attackPositionsGenerator(board, checkingPositions, &checkingPositionsLen, char_currentPlayer, char_oppositePlayer);
+
+    // Find opponent's king position
+    int oponentsKingPosition[2];
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            if (board[row][column][0] == 'K' && board[row][column][1] == char_oppositePlayer) {
+                oponentsKingPosition[0] = row;
+                oponentsKingPosition[1] = column;
+            }
+        }
+    }
+
+    // Check if opponent's king poistion is inside checkingPositions array
+    for (int i = 0; i < checkingPositionsLen; i++)
+        if (checkingPositions[i][0] == oponentsKingPosition[0] && checkingPositions[i][1] == oponentsKingPosition[1])
+            isCheck = 1;
+    
+    return isCheck;
 }
 
 int main()
 {
-
     char board[8][8][2] = {
-        {{'W', '1'}, {'S', '1'}, {'G', '1'}, {' ', ' '}, {' ', ' '}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
-        {{'P', '1'}, {' ', ' '}, {'P', '1'}, {' ', ' '}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
-        {{' ', ' '}, {'P', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'G', '1'}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{'P', '0'}, {'P', '0'}, {' ', ' '}, {' ', ' '}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
-        {{'W', '0'}, {'S', '0'}, {'G', '0'}, {' ', ' '}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}};
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{'H', '1'}, {' ', ' '}, {' ', ' '}, {'W', '1'}, {'K', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
+    };
 
     renderBoard(board);
 
@@ -552,6 +543,9 @@ int main()
         int legalMoves[30][2];
         int legalMovesLength = 0;
 
+        char char_currentPlayer = (PLAYER == 0) ? '0' : '1';
+        char char_oppositePlayer = (PLAYER == 0) ? '1' : '0';
+
         if (1)
         {
             // 1) Ask player which figure to move
@@ -560,12 +554,13 @@ int main()
             while (!isSelectedFigureLegal(board, startingPosition)); // Check if chosen starting position is legal
 
             // 2) Generate legal moves for selected figure
-            char char_currentPlayer = (PLAYER == 0) ? '0' : '1';
-
             legalMovesGenerator(board, startingPosition, legalMoves, &legalMovesLength, char_currentPlayer);
 
-            // Check if any legal moves exist
-            if (legalMoves[0][0] == -1) {
+            // 3) Delete moves allowing for check on current player's king
+            deleteMovesAllowingCheck(board, legalMoves, &legalMovesLength, startingPosition, char_currentPlayer, char_oppositePlayer);
+
+            // 4) Check if any legal moves exist
+            if (legalMovesLength == 0) {
                 printf("\n* Ta figura nie ma żadnych dostępnych ruchów *\n\n");
                 continue;
             }
@@ -590,6 +585,8 @@ int main()
         renderBoard(board);
 
         // Check for win
+        if(checkForCheck(board, char_currentPlayer, char_oppositePlayer)==1)
+            printf("*** SZACH ***\n");
 
         // Change player
         PLAYER = !PLAYER;
