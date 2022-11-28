@@ -3,9 +3,26 @@
 #define WIN 1000
 #define LOSS -1000
 
+//const int WEIGHTS[6][2] = { {'P', '10'}, {'S', '30'}, {'G', '30'}, {'W', '50'}, {'H', '90'}, {'K', '900'} };
+
+struct w
+{
+    char figure;
+    int weight;
+};
+
+struct w WEIGHTS[6] = {
+    {'P', 10},
+    {'S', 30},
+    {'G', 30},
+    {'W', 50},
+    {'H', 90},
+    {'K', 900}
+};
+
 _Bool GAME_STATUS = 1; // 1 or 0 (playing or win/draw)
 _Bool PLAYER = 0;      // 1 or 0 (player or computer)
-_Bool DRAW = 0;
+_Bool DRAW = 0;        // 1 or 0 (draw or no draw)
 
 void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *legalMoveIndex, char char_currentPlayer);
 
@@ -349,11 +366,18 @@ void allLegalMovesForPlayer(char board[8][8][2], int legalMoves[][2], int *legal
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
             if(board[row][column][1] == char_currentPlayer){
+                int legalMovesForCurrentFigure[30][2];
+                int length = 0;
                 int position[2] = {row, column};
-                legalMovesGenerator(board, position, legalMoves, legalMovesLength, char_currentPlayer);
-                deleteMovesAllowingCheck(board, legalMoves, legalMovesLength, position, char_currentPlayer, char_oppositePlayer);
+
+                legalMovesGenerator(board, position, legalMovesForCurrentFigure, &length, char_currentPlayer);
+                deleteMovesAllowingCheck(board, legalMovesForCurrentFigure, &length, position, char_currentPlayer, char_oppositePlayer);
+
+                for (int i = 0; i <= length; i++)
+                    appendToLegalMoves(legalMoves, legalMovesLength, legalMovesForCurrentFigure[i][0], legalMovesForCurrentFigure[i][1]);
+                
             }
-        }   
+        }
     }
 }
 
@@ -402,7 +426,7 @@ void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legal
 
 // Deletes moves that allow for check 
 void deleteMovesAllowingCheck(char board[8][8][2], int legalMoves[][2], int *legalMovesLength, int startingPosition[2], char char_currentPlayer, char char_oppositePlayer)
-{
+{    
     // Check every move in legalMoves array for a check on current's player king
     for (int legalMovesIndex = 0; legalMovesIndex < *legalMovesLength; legalMovesIndex++)
     {
@@ -552,17 +576,52 @@ _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppo
     return 0;
 }
 
+/*
+* COMPUTER PART
+*/
+
+int evaluateBoard(char board[8][8][2], char char_maximizingPlayer) {
+    int greenPlayerScore = 0;
+    int bluePlayerScore = 0;
+
+    for (int row = 0; row < 8; row++)
+    {
+        for (int  column = 0; column < 8; column++)
+        {
+            if(board[row][column][0] != ' ') {
+                int currentFigureScore = 0;
+                for (int i = 0; i < 6; i++)
+                    if(board[row][column][0] == WEIGHTS[i].figure)
+                        currentFigureScore += WEIGHTS[i].weight;
+                
+
+                if(board[row][column][1] == '0')
+                    greenPlayerScore += currentFigureScore;
+                else
+                    bluePlayerScore += currentFigureScore;
+            }
+
+        }
+        
+    }
+
+    if(char_maximizingPlayer == '0' ? 1 : 0)
+        return greenPlayerScore - bluePlayerScore;
+    else
+        return bluePlayerScore - greenPlayerScore;
+}
+
 int main()
 {
     char board[8][8][2] = {
-        {{'W', '1'}, {'S', '1'}, {'G', '1'}, {'H', '1'}, {'K', '1'}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
-        {{'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
+        {{'H', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'P', '1'}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
-        {{'W', '0'}, {'S', '0'}, {'G', '0'}, {'K', '0'}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {'K', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
     };
 
     renderBoard(board);
