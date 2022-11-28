@@ -1,9 +1,5 @@
 #include <stdio.h>
-
-#define WIN 1000
-#define LOSS -1000
-
-//const int WEIGHTS[6][2] = { {'P', '10'}, {'S', '30'}, {'G', '30'}, {'W', '50'}, {'H', '90'}, {'K', '900'} };
+#include <stdlib.h>
 
 struct w
 {
@@ -382,6 +378,30 @@ void allLegalMovesForPlayer(char board[8][8][2], int legalMoves[][2], int *legal
     legalMoves[*legalMovesLength][0] = -1;
 }
 
+// Appends all legal moves that player has to legalMoves array
+void allLegalMovesForPlayerExtended(char board[8][8][2], int legalMoves[][2][2], int *legalMovesLength, char char_currentPlayer, char char_oppositePlayer) {
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            if(board[row][column][1] == char_currentPlayer){
+                int currentLegalMoves[30][2];
+                int currentLegalMovesLength = 0;
+                int startingPosition[2] = {row, column};
+
+                legalMovesGenerator(board, startingPosition, currentLegalMoves, &currentLegalMovesLength, char_currentPlayer);
+                deleteMovesAllowingCheck(board, currentLegalMoves, &currentLegalMovesLength, startingPosition, char_currentPlayer, char_oppositePlayer);
+
+                for (int i = 0; i < currentLegalMovesLength; i++) {
+                    legalMoves[*legalMovesLength][0][0] = row;
+                    legalMoves[*legalMovesLength][0][1] = column;
+                    legalMoves[*legalMovesLength][1][0] = currentLegalMoves[i][0];
+                    legalMoves[*legalMovesLength][1][1] = currentLegalMoves[i][1];
+                    ++*legalMovesLength;
+                }
+            }
+        }
+    }
+}
+
 // Appends legal moves of a chosen figure to array
 void legalMovesGenerator(char board[8][8][2], int startingPosition[2], int legalMoves[][2], int *legalMovesLength, char char_currentPlayer)
 {
@@ -601,9 +621,7 @@ int evaluateBoard(char board[8][8][2], char char_maximizingPlayer) {
                 else
                     bluePlayerScore += currentFigureScore;
             }
-
         }
-        
     }
 
     if(char_maximizingPlayer == '0' ? 1 : 0)
@@ -612,17 +630,124 @@ int evaluateBoard(char board[8][8][2], char char_maximizingPlayer) {
         return bluePlayerScore - greenPlayerScore;
 }
 
+void boardAfterMove(char emptyBoard[8][8][2], char board[8][8][2], int startingPosition[2], int endingPosition[2])
+{
+    emptyBoard[endingPosition[0]][endingPosition[1]][0] = board[startingPosition[0]][startingPosition[1]][0];
+    emptyBoard[endingPosition[0]][endingPosition[1]][1] = board[startingPosition[0]][startingPosition[1]][1];
+
+    emptyBoard[startingPosition[0]][startingPosition[1]][0] = ' ';
+    emptyBoard[startingPosition[0]][startingPosition[1]][1] = ' ';
+
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if(!(i == startingPosition[0] && j == startingPosition[1]) && !(i == endingPosition[0] && j == endingPosition[1])) {
+                emptyBoard[i][j][0] = board[i][j][0];
+                emptyBoard[i][j][1] = board[i][j][1];
+            }
+        }  
+    }
+}
+
+int minimax(char board[8][8][2], int bestMoveStart[2], int bestMoveEnd[2], char char_maximizingPlayer, char char_minimizingPlayer, int depth)
+{
+    if (depth == 0 || (checkForCheck(board, char_minimizingPlayer, char_maximizingPlayer) && !numberOfLegalMoves(board, char_maximizingPlayer, char_minimizingPlayer)))
+        return evaluateBoard(board, char_maximizingPlayer);
+
+    // Generate all legal moves for maximizing player
+    int allLegalMoves[200][2][2];
+    int allLegalMovesLength = 0;
+    allLegalMovesForPlayerExtended(board, allLegalMoves, &allLegalMovesLength, char_maximizingPlayer, char_minimizingPlayer);
+
+    // Pick random move from all legal moves
+    int currentBestStart[2] = {allLegalMoves[0][0][0], allLegalMoves[0][0][1]};
+    int currentBestEnd[2] = {allLegalMoves[0][1][0], allLegalMoves[0][1][1]};
+
+    if (char_maximizingPlayer == '1') {
+        int max_eval = -10000;
+
+        for (int move = 0; move < allLegalMovesLength; move++)
+        {
+            int startingPositon[2] = {allLegalMoves[move][0][0], allLegalMoves[move][0][1]};
+            int endingPosition[2] = {allLegalMoves[move][1][0], allLegalMoves[move][1][1]};
+
+            char emptyBoard[8][8][2] = {
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
+            };
+
+            boardAfterMove(emptyBoard, board, startingPositon, endingPosition);
+
+            // Evaluate board
+            int currentEval = minimax(emptyBoard, startingPositon, endingPosition, char_minimizingPlayer, char_maximizingPlayer, depth-1);        
+
+            if (currentEval > max_eval);
+            {
+                max_eval = currentEval;
+                bestMoveStart[0] = allLegalMoves[move][0][0];
+                bestMoveStart[1] = allLegalMoves[move][0][1];
+                bestMoveEnd[0] = allLegalMoves[move][1][0];
+                bestMoveEnd[1] = allLegalMoves[move][1][1];
+            }
+            
+        }
+
+        return max_eval;
+
+    } else if (char_maximizingPlayer == '0') {
+        int min_eval = 10000;
+
+        for (int move = 0; move < allLegalMovesLength; move++)
+        {
+            int startingPositon[2] = {allLegalMoves[move][0][0], allLegalMoves[move][0][1]};
+            int endingPosition[2] = {allLegalMoves[move][1][0], allLegalMoves[move][1][1]};
+
+            char emptyBoard[8][8][2] = {
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+                {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
+            };
+
+            boardAfterMove(emptyBoard, board, startingPositon, endingPosition);
+
+            // Evaluate board
+            int currentEval = minimax(emptyBoard, startingPositon, endingPosition, char_minimizingPlayer, char_maximizingPlayer, depth-1);        
+
+            if (currentEval < min_eval);
+            {
+                min_eval = currentEval;
+                bestMoveStart[0] = allLegalMoves[move][0][0];
+                bestMoveStart[1] = allLegalMoves[move][0][1];
+                bestMoveEnd[0] = allLegalMoves[move][1][0];
+                bestMoveEnd[1] = allLegalMoves[move][1][1];
+            }
+        }
+
+        return min_eval;
+    }
+}
+
 int main()
 {
     char board[8][8][2] = {
-        {{'H', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'P', '1'}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{'W', '1'}, {'S', '1'}, {'G', '1'}, {'H', '1'}, {'K', '1'}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
+        {{'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {'K', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
+        {{'W', '0'}, {'S', '0'}, {'G', '0'}, {'K', '0'}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}
     };
 
     renderBoard(board);
@@ -639,7 +764,7 @@ int main()
         char char_currentPlayer = (PLAYER == 0) ? '0' : '1';
         char char_oppositePlayer = (PLAYER == 0) ? '1' : '0';
 
-        if (1)
+        if (!PLAYER)
         {
             // 1) Ask player which figure to move
             do
@@ -668,8 +793,12 @@ int main()
         }
         else
         {
-            // 1) Best move generator function
+            // MINIMAX
+            minimax(board, startingPosition, endingPosition, '1', '0', 4);
         }
+
+        printf("Move from: [%d, %d]\n", startingPosition[0], startingPosition[1]);
+        printf("Move to: [%d, %d]\n", endingPosition[0], endingPosition[1]);
 
         // Check if players pawn moved to the last row change and change it to hetman
         if(board[startingPosition[0]][startingPosition[1]][0] == 'P' && endingPosition[0] == (char_currentPlayer == '0' ? 0 : 7))
