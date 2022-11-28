@@ -373,12 +373,13 @@ void allLegalMovesForPlayer(char board[8][8][2], int legalMoves[][2], int *legal
                 legalMovesGenerator(board, position, legalMovesForCurrentFigure, &length, char_currentPlayer);
                 deleteMovesAllowingCheck(board, legalMovesForCurrentFigure, &length, position, char_currentPlayer, char_oppositePlayer);
 
-                for (int i = 0; i <= length; i++)
+                for (int i = 0; i < length; i++)
                     appendToLegalMoves(legalMoves, legalMovesLength, legalMovesForCurrentFigure[i][0], legalMovesForCurrentFigure[i][1]);
-                
             }
         }
     }
+
+    legalMoves[*legalMovesLength][0] = -1;
 }
 
 // Appends legal moves of a chosen figure to array
