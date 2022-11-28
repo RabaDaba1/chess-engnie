@@ -392,6 +392,7 @@ void deleteMovesAllowingCheck(char board[8][8][2], int legalMoves[][2], int *leg
     // Check every move in legalMoves array for a check on current's player king
     for (int legalMovesIndex = 0; legalMovesIndex < *legalMovesLength; legalMovesIndex++)
     {
+        // Generate board after move
         char boardAfterMove[8][8][2] = {
             {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
             {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
@@ -591,10 +592,10 @@ int main()
                 continue;
             }
 
-            // 3) Render board with posible legal moves highlighted
+            // 5) Render board with posible legal moves highlighted
             renderBoardWithMoves(board, legalMoves, legalMovesLength);
 
-            // 4) Ask player where to move a chosen pawn until move is legal
+            // 6) Ask player where to move a chosen pawn until move is legal
             do
                 askForPosition(endingPosition, "Podaj kolumnę i rząd, na które chcesz się ruszyć: ");
             while (!isMoveLegal(board, startingPosition, endingPosition, legalMoves)); // Check if chosen ending position is legal
@@ -626,7 +627,7 @@ int main()
         else {
             // Check if opponent after currents player move has any legal moves
             if(!numOfLegalMoves) {
-                printf("\n* PAT *\n\n");
+                printf("* PAT *\n\n");
                 DRAW = 1;
                 break;
             }
