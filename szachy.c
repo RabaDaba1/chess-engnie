@@ -169,6 +169,17 @@ void appendToLegalMoves(int legalMoves[][2], int *i, int row, int col)
     ++*i;
 }
 
+void findFigureOnBoard(char board[8][8][2], char figure, char char_player, int position[2]) {
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            if (board[row][column][0] == figure && board[row][column][1] == char_player) {
+                position[0] = row;
+                position[1] = column;
+            }
+        }
+    }
+}
+
 /*
  * MOVE GENERATORS FOR SELECTED FIGURES
 */
@@ -181,6 +192,10 @@ void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int sta
 
     if ((board[startRow + vector][startCol][1] == ' ') && startRow + vector < 8 && startRow + vector > -1)
         appendToLegalMoves(legalMoves, i, startRow + vector, startCol);
+
+    if(startRow == (char_oppositePlayer == '0' ? 1 : 6))
+        if((board[startRow + 2*vector][startCol][1] == ' ') && startRow + 2*vector < 8 && startRow + 2*vector > -1)
+            appendToLegalMoves(legalMoves, i, startRow + 2*vector, startCol);
 
     if (startRow + vector < 8 && startRow + vector > -1)
     {
@@ -517,7 +532,7 @@ _Bool isSelectedFigureLegal(char board[8][8][2], int startingPosition[2])
     return 1;
 }
 
-// Check if current player checked opponent
+// Checks if current player checked opponent
 _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppositePlayer) {
     // Get all positions that current player can attack for a given board
     int checkingPositions[200][2];
@@ -528,14 +543,7 @@ _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppo
 
     // Find opponent's king position
     int oponentsKingPosition[2];
-    for (int row = 0; row < 8; row++) {
-        for (int column = 0; column < 8; column++) {
-            if (board[row][column][0] == 'K' && board[row][column][1] == char_oppositePlayer) {
-                oponentsKingPosition[0] = row;
-                oponentsKingPosition[1] = column;
-            }
-        }
-    }
+    findFigureOnBoard(board, 'K', char_oppositePlayer, oponentsKingPosition);
 
     // Check if opponent's king poistion is inside checkingPositions array
     for (int i = 0; i < checkingPositionsLen; i++)
@@ -544,7 +552,6 @@ _Bool checkForCheck(char board[8][8][2], char char_currentPlayer, char char_oppo
     
     return 0;
 }
-
 
 int main()
 {
