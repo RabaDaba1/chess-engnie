@@ -199,11 +199,10 @@ void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int sta
 
     if (startRow + vector < 8 && startRow + vector > -1)
     {
-
-        if (board[startRow + vector][startCol + 1][1] == char_oppositePlayer && startCol + 1 < 8)
+        if (board[startRow + vector][startCol+1][1] == char_oppositePlayer && startCol+1 < 8)
             appendToLegalMoves(legalMoves, i, startRow + vector, startCol + 1);
 
-        if (board[startRow + vector][startCol - 1][1] == char_oppositePlayer && startCol - 1 > -1)
+        if (board[startRow + vector][startCol-1][1] == char_oppositePlayer && startCol-1 > -1)
             appendToLegalMoves(legalMoves, i, startRow + vector, startCol - 1);
     }
 }
@@ -612,6 +611,10 @@ int main()
             // 1) Best move generator function
         }
 
+        // Check if players pawn moved to the last row change and change it to hetman
+        if(board[startingPosition[0]][startingPosition[1]][0] == 'P' && endingPosition[0] == (char_currentPlayer == '0' ? 0 : 7))
+            board[startingPosition[0]][startingPosition[1]][0] = 'H';
+
         // Update board
         updateBoard(board, startingPosition, endingPosition);
 
@@ -625,6 +628,7 @@ int main()
         if(isCheck){
             printf("* SZACH *\n\n");
 
+            // if CHECK and NO LEGAL MOVES --> MAT
             if(!numOfLegalMoves) {
                 printf("* MAT *\n\n");
                 GAME_STATUS = 1;
@@ -632,7 +636,7 @@ int main()
             }
         }
         else {
-            // Check if opponent after currents player move has any legal moves
+            // if NO CHECK and NO LEGAL MOVES --> PAT
             if(!numOfLegalMoves) {
                 printf("* PAT *\n\n");
                 DRAW = 1;
