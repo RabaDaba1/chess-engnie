@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 struct w
 {
@@ -7,14 +8,7 @@ struct w
     int weight;
 };
 
-struct w WEIGHTS[6] = {
-    {'P', 10},
-    {'S', 30},
-    {'G', 30},
-    {'W', 50},
-    {'H', 90},
-    {'K', 900}
-};
+struct w WEIGHTS[6] = { {'P', 10}, {'S', 30}, {'G', 30}, {'W', 50}, {'H', 90}, {'K', 900} };
 
 _Bool GAME_STATUS = 1; // 1 or 0 (playing or win/draw)
 _Bool PLAYER = 0;      // 1 or 0 (player or computer)
@@ -182,6 +176,7 @@ void appendToLegalMoves(int legalMoves[][2], int *i, int row, int col)
     ++*i;
 }
 
+// Finds given player figure and appends it's coordinates to position array
 void findFigureOnBoard(char board[8][8][2], char figure, char char_player, int position[2]) {
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
@@ -203,12 +198,14 @@ void legalMovesForPawn(char board[8][8][2], int legalMoves[][2], int *i, int sta
 {
     int vector = (char_oppositePlayer == '0') ? 1 : -1;
 
-    if ((board[startRow + vector][startCol][1] == ' ') && startRow + vector < 8 && startRow + vector > -1)
+    if ((board[startRow + vector][startCol][1] == ' ') && startRow + vector < 8 && startRow + vector > -1) {
         appendToLegalMoves(legalMoves, i, startRow + vector, startCol);
 
-    if(startRow == (char_oppositePlayer == '0' ? 1 : 6))
-        if((board[startRow + 2*vector][startCol][1] == ' ') && startRow + 2*vector < 8 && startRow + 2*vector > -1)
-            appendToLegalMoves(legalMoves, i, startRow + 2*vector, startCol);
+        if(startRow == (char_oppositePlayer == '0' ? 1 : 6))
+            if((board[startRow + 2*vector][startCol][1] == ' ') && startRow + 2*vector < 8 && startRow + 2*vector > -1)
+                appendToLegalMoves(legalMoves, i, startRow + 2*vector, startCol);
+    }
+
 
     if (startRow + vector < 8 && startRow + vector > -1)
     {
@@ -651,7 +648,7 @@ void boardAfterMove(char emptyBoard[8][8][2], char board[8][8][2], int startingP
 int minimax(char board[8][8][2], int bestMoveStart[2], int bestMoveEnd[2], char char_maximizingPlayer, char char_minimizingPlayer, int depth)
 {
     if (depth == 0 || (checkForCheck(board, char_minimizingPlayer, char_maximizingPlayer) && !numberOfLegalMoves(board, char_maximizingPlayer, char_minimizingPlayer)))
-        return evaluateBoard(board, char_maximizingPlayer);
+        return evaluateBoard(board, '1');
 
     // Generate all legal moves for maximizing player
     int allLegalMoves[200][2][2];
@@ -721,7 +718,7 @@ int minimax(char board[8][8][2], int bestMoveStart[2], int bestMoveEnd[2], char 
             boardAfterMove(emptyBoard, board, startingPositon, endingPosition);
 
             // Evaluate board
-            int currentEval = minimax(emptyBoard, startingPositon, endingPosition, char_minimizingPlayer, char_maximizingPlayer, depth-1);        
+            int currentEval = minimax(emptyBoard, startingPositon, endingPosition, char_minimizingPlayer, char_maximizingPlayer, depth-1);
 
             if (currentEval < min_eval);
             {
@@ -740,21 +737,20 @@ int minimax(char board[8][8][2], int bestMoveStart[2], int bestMoveEnd[2], char 
 int main()
 {
     char board[8][8][2] = {
-        {{'W', '1'}, {'S', '1'}, {'G', '1'}, {'H', '1'}, {'K', '1'}, {'G', '1'}, {'S', '1'}, {'W', '1'}},
-        {{'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
+        {{'H', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'K', '1'}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {'P', '1'}, {'P', '1'}, {'P', '1'}},
+        {{' ', ' '}, {'W', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
         {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
-        {{'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}, {'P', '0'}},
-        {{'W', '0'}, {'S', '0'}, {'G', '0'}, {'K', '0'}, {'H', '0'}, {'G', '0'}, {'S', '0'}, {'W', '0'}}
+        {{' ', ' '}, {'P', '1'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}},
+        {{' ', ' '}, {'K', '0'}, {' ', ' '}, {'W', '0'}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}}
     };
 
     renderBoard(board);
 
     while (GAME_STATUS)
     {
-
         int startingPosition[2];
         int endingPosition[2];
 
@@ -794,11 +790,11 @@ int main()
         else
         {
             // MINIMAX
-            minimax(board, startingPosition, endingPosition, '1', '0', 4);
+            minimax(board, startingPosition, endingPosition, '1', '0', 1);
+            // Delay
+            unsigned int retTime = time(0) + 3;
+            while (time(0) < retTime);  
         }
-
-        printf("Move from: [%d, %d]\n", startingPosition[0], startingPosition[1]);
-        printf("Move to: [%d, %d]\n", endingPosition[0], endingPosition[1]);
 
         // Check if players pawn moved to the last row change and change it to hetman
         if(board[startingPosition[0]][startingPosition[1]][0] == 'P' && endingPosition[0] == (char_currentPlayer == '0' ? 0 : 7))
@@ -814,7 +810,8 @@ int main()
         _Bool isCheck = checkForCheck(board, char_currentPlayer, char_oppositePlayer);
         int numOfLegalMoves = numberOfLegalMoves(board, char_oppositePlayer, char_currentPlayer);
 
-        if(isCheck){
+        if(isCheck)
+        {
             printf("* SZACH *\n\n");
 
             // if CHECK and NO LEGAL MOVES --> MAT
@@ -824,7 +821,8 @@ int main()
                 break;
             }
         }
-        else {
+        else
+        {
             // if NO CHECK and NO LEGAL MOVES --> PAT
             if(!numOfLegalMoves) {
                 printf("* PAT *\n\n");
