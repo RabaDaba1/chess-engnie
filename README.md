@@ -14,9 +14,8 @@ This is a chess engine written in C using mini-max algorithm.
 
 To install the program, follow these steps:
 
-1. Clone the repository.
-2. Compile the program using your favorite C compiler.
-3. Run the executable.
+1. Clone or download the repository.
+2. Run the chess executable.
 
 ## How to make a move
 To make a move, type the column and row of the chess board to select a pawn. From the allowed legal moves, type the column and row of the chess board to make a move.
@@ -27,4 +26,4 @@ To make a move, type the column and row of the chess board to select a pawn. Fro
 
 ## Contact
 
-If you have any questions or feedback, please contact me at [insert email address here].
+If you have any questions or feedback, please contact me at krabczewski@gmail.com.
