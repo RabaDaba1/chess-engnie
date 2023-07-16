@@ -1,6 +1,7 @@
 # Chess Engine
 
 This is a chess engine written in C using mini-max algorithm.
+![](game_gui.gif)
 
 ## Features
 
