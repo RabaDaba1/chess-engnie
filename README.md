@@ -6,7 +6,7 @@ This is a chess engine written in C using mini-max algorithm.
 
 ## Features
 
-- Renders the chess board in the console.
+- Renders a chess board in a console.
 - Generates legal moves for each chess piece.
 - Checks if there is a check, pat and mate.
 - Uses mini-max algorithm and board evaluation function.
